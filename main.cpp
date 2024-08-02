@@ -9,11 +9,11 @@
 #pragma comment(linker, "/SUBSYSTEM:WINDOWS")
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
-	std::ifstream stream("./test.txt");
+	std::ifstream stream("./res/map.txt");
 	int mapWidth;
 	int mapHeight;
 
-	RCCamera    camera;
+	RCCamera camera;
 	std::string temp;
 	std::getline(stream, temp);
 	mapWidth = atoi(temp.c_str());
@@ -23,21 +23,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	camera.Z = 0;
 	camera.SetPitch(0.f);
 
-	RCTexture testTexture(new RCContext(_T("./pics/cobblestone.png")));
-	RCTexture testDigTexture(new RCContext(_T("./pics/kobi.jpg")));
-	auto doorContext = new RCContext(_T("./pics/avatar.jpg"));
+	RCTexture wallTexture(new RCContext(_T("./res/texture/wall.png")));
+	RCTexture digTexture(new RCContext(_T("./res/texture/dig.png")));
+	auto doorContext = new RCContext(_T("./res/texture/grate.png"));
 	RCTexture testDoorTexture(doorContext);
-	auto glassContext = new RCContext(_T("./pics/glass.png"));
+	auto glassContext = new RCContext(_T("./res/texture/glass.png"));
 	RCTexture testGlassTexture(glassContext);
-	auto stripContext = new RCContext(_T("./pics/strip.png"));
+	auto stripContext = new RCContext(_T("./res/texture/strip.png"));
 	RCTexture testStripTexture(stripContext);
 
 	auto mapUnit = new RCMapUnit[mapWidth * mapHeight];
 	int count = 0;
 	int x = 0;
 	int y = 0;
-	int wallCount = 0;
-	int *door;
 	while (!stream.eof()) {
 		std::getline(stream, temp);
 		x = 0;
@@ -50,7 +48,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 				mapUnit[count].Passable = true;
 			}
 			else if (item == 'm') {
-				mapUnit[count].Texture = &testDigTexture;
+				mapUnit[count].Texture = &digTexture;
 				mapUnit[count].Type = RCMapUnitType::DiagWallRightLeft;
 			}
 			else if (item == 'd') {
@@ -69,7 +67,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 				mapUnit[count].Passable = false;
 			}
 			else if (item != ' ') {
-				mapUnit[count].Texture = &testTexture;
+				mapUnit[count].Texture = &wallTexture;
 				mapUnit[count].Type = RCMapUnitType::Wall;
 			}
 			else {
@@ -84,18 +82,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		++y;
 	}
 
-	RCTexture spriteTexture(new RCContext(_T("./pics/sprite - copy.png")));
+	RCTexture spriteTexture(new RCContext(_T("./res/texture/sprite.png")));
 	RCSprite sprite { .texture = &spriteTexture, .x = camera.Position.x - 5, .y = camera.Position.y, .z = 9, .interactable = true,
 	                .triggerRange = 1.f,
 	.OnTrigger = [&sprite]() {
 			sprite.x -= 1.f;
 		}};
 
-	RCTexture floorTexture(new RCContext(_T("./pics/tnt_top.png")));
-	RCTexture ceilTexture(new RCContext(_T("./pics/greystone.png")));
-	RCTexture skyboxTexture(new RCContext(_T("./pics/2k.jpg")));
+	RCTexture floorTexture(new RCContext(_T("./res/texture/floor.png")));
+	RCTexture ceilingTexture(new RCContext(_T("./res/texture/ceiling.png")));
+	RCTexture skyboxTexture(new RCContext(_T("./res/texture/skybox.jpg")));
 
-	RCVideoWindow videoWindow(1920, 1080, _T("RC Engine"));
+	RCVideoWindow videoWindow(640, 480, _T("RC Engine Demo"));
 	auto [renderTarget, context] = videoWindow.GetRenderTuple();
 	auto map = new RCMap(mapWidth, mapHeight, (RCMapUnit *) mapUnit);
 	RCScene scene(map);
@@ -111,15 +109,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	scene.SetFloorTexture(&floorTexture);
 	scene.SetSkyBoxTexture(&skyboxTexture);
 	scene.SetSkyboxRepeat(1);
-	scene.SetCeilingTexture(&ceilTexture);
+	scene.SetCeilingTexture(&ceilingTexture);
 
 	RCInteractor interactor(&camera, &videoWindow, map, &scene);
 
 	RCRenderer  renderer(renderTarget, &camera, &scene);
 	ExMessage   message{};
 
-
-	renderer.EnableSuperResolution(true);
+	renderer.EnableSuperResolution(false);
 
 	videoWindow.SetCursorVisible(false);
 
@@ -127,61 +124,28 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	GetWindowRect(GetHWnd(), &rectangle);
 
 	ClipCursor(&rectangle);
-
-	time_t old = clock();
-
-	int halfWidth = getwidth() / 2;
-	int halfHeight = getheight() / 2;
-
+	
 	videoWindow.MoveCursorToCenter();
 
 	float frameRate = 0.01f;
+
+	setbkmode(TRANSPARENT);
+
 	while (true) {
 		frameRate = renderer.Render();
-		if (GetForegroundWindow() == GetHWnd()) {
-			ExMessage Message{};
-			POINT mousePoint;
-			GetCursorPos(&mousePoint);
-			ScreenToClient(GetHWnd(), &mousePoint);
-			auto xDelta = mousePoint.x - halfWidth;
-			auto yDelta = mousePoint.y - halfHeight;
-
-			bool flag = false;
-
-			if (xDelta > 1) {
-				flag = true;
-				Message.x = RCViewLookRight;
-			}
-			else if (xDelta < -1) {
-				flag = true;
-				Message.x = RCViewLookLeft;
-			}
-			if (yDelta > 1) {
-				flag = true;
-				Message.y = RCViewLookDown;
-			}
-			else if (yDelta < -1) {
-				flag = true;
-				Message.y = RCViewLookUp;
-			}
-			Message.message = RCViewLookChange;
-
-			if (flag) {
-				videoWindow.MoveCursorToCenter();
-				interactor.ProcessMessage(Message, frameRate, xDelta, yDelta);
-			}
-		}
-		frameRate = frameRate < 0.001f ? 0.001f : frameRate;
-		while (videoWindow.Message(&message) && message.message != RCViewLookChange) {
-			interactor.ProcessMessage(message, frameRate);
-			if (message.vkcode == VK_ESCAPE) {
-				exit(0);
-			}
-		}
-		interactor.ProcessDoorAnimation(frameRate);
-		interactor.FrameProcess(frameRate);
-		interactor.SpriteInteractor();
-
+		interactor.Interact(frameRate);
+		settextcolor(BLACK);
+		outtextxy(21, 21, _T("操作说明："));
+		outtextxy(21, 38, _T("   按下 'F' 开门"));
+		outtextxy(21, 51, _T("   按下 'ESC' 退出"));
+		outtextxy(21, 64, _T("   'W' 'S' 'A' 'D' 左右移动"));
+		outtextxy(21, 77, _T("   'ctrl' 潜行 'shift' 疾跑"));
+		settextcolor(WHITE);
+		outtextxy(20, 20, _T("操作说明："));
+		outtextxy(20, 36, _T("   按下 'F' 开门"));
+		outtextxy(20, 50, _T("   按下 'ESC' 退出"));
+		outtextxy(20, 63, _T("   'W' 'S' 'A' 'D' 左右移动"));
+		outtextxy(20, 76, _T("   'ctrl' 潜行 'shift' 疾跑"));
 		renderTarget->Flush();
 	}
 

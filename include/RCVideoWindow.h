@@ -47,7 +47,7 @@
 class RCVideoWindow {
 public:
 	/**
-	 * 创建一个指定长、高和标题的窗口
+	 * 创建一个指定长、高和标题的窗口，默认将会将窗口居中于当前显示屏中
 	 * @param Width 窗口的长
 	 * @param Height 窗口的高
 	 * @param Title 窗口的标题

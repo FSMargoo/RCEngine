@@ -51,6 +51,7 @@ void RCInteractor::CreateDefaultKeyBind() {
 	_keyBind.insert({ 17, RCInteractType::Sneak });
 	_keyBind.insert({ 16, RCInteractType::Sprint });
 	_keyBind.insert({ 'F', RCInteractType::Interact });
+	_keyBind.insert({ 27, RCInteractType::Quit });
 }
 void RCInteractor::ProcessMessage(const ExMessage &Message, const float &FrameRate, const float &XDelta,
                                   const float &YDelta) {
@@ -182,6 +183,9 @@ void RCInteractor::ProcessMessage(const ExMessage &Message, const float &FrameRa
 			auto keyBind = _keyBind.find(Message.vkcode);
 			if (keyBind != _keyBind.end()) {
 				switch (keyBind->second) {
+					case RCInteractType::Quit: {
+						exit(0);
+					}
 					case RCInteractType::Sprint: {
 						_moveSpeedFactor = 1.f;
 					}
@@ -360,6 +364,52 @@ void RCInteractor::ProcessDoorAnimation(const float &FrameRate) {
 			_inAnimationDoor.erase(_inAnimationDoor.begin() + count);
 			--count;
 			continue;
+		}
+	}
+}
+void RCInteractor::Interact(const float &frame) {
+	auto        frameRate = frame < 0.001f ? 0.001f : frame;
+	ExMessage   message{};
+	while (_window->Message(&message) && message.message != RCViewLookChange) {
+		ProcessMessage(message, frameRate);
+	}
+	ProcessDoorAnimation(frameRate);
+	FrameProcess(frameRate);
+	CheckMouse(_window->_width / 2, _window->_height / 2, frameRate);
+	SpriteInteractor();
+}
+void RCInteractor::CheckMouse(const int &halfWidth, const int &halfHeight, const float &frameRate) {
+	if (GetForegroundWindow() == GetHWnd()) {
+		ExMessage Message{};
+		POINT mousePoint;
+		GetCursorPos(&mousePoint);
+		ScreenToClient(GetHWnd(), &mousePoint);
+		auto xDelta = mousePoint.x - halfWidth;
+		auto yDelta = mousePoint.y - halfHeight;
+
+		bool flag = false;
+
+		if (xDelta > 1) {
+			flag = true;
+			Message.x = RCViewLookRight;
+		}
+		else if (xDelta < -1) {
+			flag = true;
+			Message.x = RCViewLookLeft;
+		}
+		if (yDelta > 1) {
+			flag = true;
+			Message.y = RCViewLookDown;
+		}
+		else if (yDelta < -1) {
+			flag = true;
+			Message.y = RCViewLookUp;
+		}
+		Message.message = RCViewLookChange;
+
+		if (flag) {
+			_window->MoveCursorToCenter();
+			ProcessMessage(Message, frameRate, xDelta, yDelta);
 		}
 	}
 }

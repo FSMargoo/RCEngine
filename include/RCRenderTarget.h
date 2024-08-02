@@ -40,6 +40,9 @@ public:
 	 * @param Context 目标 RCContext 对象的指针
 	 */
 	explicit RCRenderTarget(RCContext *Context);
+	~RCRenderTarget() {
+
+	}
 
 public:
 	/**

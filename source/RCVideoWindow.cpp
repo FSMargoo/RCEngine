@@ -62,6 +62,13 @@ RCVideoWindow::RCVideoWindow(const int &Width, const int &Height, const TCHAR *T
 	SetWindowLongPtr(_handle, GWLP_WNDPROC, (LONG_PTR)&RCWindowProc);
 	BeginBatchDraw();
 
+	RECT mointorRectangle;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &mointorRectangle, 0);
+	int screenWidth = mointorRectangle.right - mointorRectangle.left;
+	int screenHeight = mointorRectangle.bottom - mointorRectangle.top;
+
+	MoveWindow(GetHWnd(), screenWidth / 2 - getwidth() / 2, screenHeight / 2 - getheight() / 2, getwidth(), getheight(), false);
+
 	RCShowCursor = true;
 }
 void RCVideoWindow::SetCursorVisible(const bool &Status) {

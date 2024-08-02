@@ -58,6 +58,9 @@ public:
 	 * @param FilePath 指向受支持的图片文件路径
 	 */
 	explicit RCContext(const TCHAR *FilePath);
+	~RCContext() {
+		delete _context;
+	}
 
 public:
 	/**

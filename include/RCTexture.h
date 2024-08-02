@@ -40,6 +40,9 @@ public:
 	 * @param Context 一个合法的纹理的 Context 指针
 	 */
 	explicit RCTexture(RCContext* Context);
+	~RCTexture() {
+
+	}
 
 public:
 	/**

@@ -36,7 +36,7 @@
  * 按键类型
  */
 enum class RCInteractType {
-	W, A, S, D, LookUp, LookDown, Sneak, Sprint, Jump, Interact
+	W, A, S, D, LookUp, LookDown, Sneak, Sprint, Jump, Interact, Quit
 };
 
 /**
@@ -97,10 +97,19 @@ public:
 	virtual void FrameProcess(const float &FrameRate);
 
 public:
+	void Interact(const float &frameRate);
+
+public:
 	/**
 	 * 处理门的动画
 	 */
 	void ProcessDoorAnimation(const float &FrameRate);
+
+private:
+	/**
+	 * 处理鼠标移动
+	 */
+	void CheckMouse(const int &halfWidth, const int &halfHeight, const float &frameRate);
 
 private:
 	std::vector<RCMapUnit*>                     _inAnimationDoor;

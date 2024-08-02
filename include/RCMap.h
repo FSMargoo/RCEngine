@@ -75,8 +75,8 @@ enum class RCMapUnitType {
 struct RCMapUnit {
 	RCTexture       *Texture;
 	RCMapUnitType    Type;
-	RCMapDoor       *Door;
-	bool             Passable = false;
+	RCMapDoor       *Door       = nullptr;
+	bool             Passable   = false;
 };
 
 /**
@@ -95,6 +95,9 @@ public:
 	 * @param mapPointer 一个指向地图数组的指针
 	 */
 	RCMap(const int &Width, const int &Height, RCMapUnit *MapPointer);
+	~RCMap() {
+		delete _mapArray;
+	}
 
 public:
 	/**
