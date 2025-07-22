@@ -32,4 +32,4 @@ RCEngine 项目处于起步阶段，目前只有项目目录下的 *main.cpp* �
 
 ## 项目地址与技术支持
 
-你可以在 [GitHub 上](https://github.com/FSMargoo/RCEngine) 获取本项目的源码，并可以在 GitHub 的 issues 栏目或通过我的邮箱（margoo@margoo.icu）同我取得联系。
+你可以在 [GitHub 上](https://github.com/FSMargoo/RCEngine) 获取本项目的源码，并可以在 GitHub 的 issues 栏目或通过我的邮箱（qiuzhengyu@siggraph.org）同我取得联系。
